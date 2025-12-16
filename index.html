@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DopeDecay - Dopamine Decay Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        :root {
+            --primary-purple: #8B5CF6;
+            --primary-purple-light: #A78BFA;
+            --primary-purple-dark: #7C3AED;
+            --amber: #F59E0B;
+            --amber-light: #FBBF24;
+            --amber-dark: #D97706;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            
+            --zone-peak: rgba(16, 185, 129, 0.1);
+            --zone-viable: rgba(245, 158, 11, 0.1);
+            --zone-danger: rgba(239, 68, 68, 0.1);
+            --zone-dead: rgba(107, 114, 128, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            max-width: 100%;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .app-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .tabs-container {
+            display: flex;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 100px;
+            z-index: 90;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            color: var(--primary-purple);
+            border-bottom: 3px solid var(--primary-purple);
+        }
+        
+        .tab-icon {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .metrics-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+        
+        .metric-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            height: 300px;
+            overflow: hidden;
+        }
+        
+        .zones-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .zone-card {
+            border-radius: 10px;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .zone-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .zone-time {
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+        
+        .zone-desc {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .zone-peak {
+            background-color: var(--zone-peak);
+            border-left: 4px solid var(--success);
+        }
+        
+        .zone-viable {
+            background-color: var(--zone-viable);
+            border-left: 4px solid var(--warning);
+        }
+        
+        .zone-danger {
+            background-color: var(--zone-danger);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .zone-dead {
+            background-color: var(--zone-dead);
+            border-left: 4px solid var(--gray-700);
+        }
+        
+        .controls-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--gray-900);
+            font-size: 1rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .slider-value {
+            font-weight: 700;
+            color: var(--primary-purple);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-purple);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .toggle-label {
+            font-weight: 500;
+        }
+        
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: .3s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-purple);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .radio-option {
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .radio-option input {
+            display: none;
+        }
+        
+        .radio-label {
+            display: block;
+            text-align: center;
+            padding: 0.75rem;
+            background-color: var(--gray-100);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .radio-option input:checked + .radio-label {
+            background-color: var(--primary-purple);
+            color: white;
+        }
+        
+        .project-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-purple);
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .project-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .project-type {
+            font-size: 0.8rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--gray-100);
+            border-radius: 20px;
+        }
+        
+        .project-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .project-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-purple);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray-100);
+            color: var(--gray-900);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn-full {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quick-actions {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 80;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .action-card:active {
+            transform: scale(0.98);
+        }
+        
+        .action-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-purple);
+        }
+        
+        .action-title {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-threshold {
+            font-size: 0.8rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            display: flex;
+            padding: 0.75rem 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: var(--gray-700);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-purple);
+        }
+        
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+        
+        .emergency-btn {
+            position: fixed;
+            bottom: 70px;
+            right: 1rem;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            cursor: pointer;
+            z-index: 90;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .insight-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--amber);
+        }
+        
+        .insight-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-900);
+        }
+        
+        .insight-content {
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--gray-200);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid var(--primary-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--primary-purple);
+        }
+        
+        .timeline-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .timeline-time {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--gray-900);
+        }
+        
+        .timeline-desc {
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        
+        .current-position {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(139, 92, 246, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary-purple);
+            margin-bottom: 1rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-actions .btn {
+            flex: 1;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 120px;
+            right: 1rem;
+            background-color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--primary-purple);
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-desc {
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        
+        @media (max-width: 480px) {
+            .metrics-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-wrap: wrap;
+            }
+            
+            .quick-actions .btn {
+                flex: 1;
+                min-width: calc(50% - 0.5rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <h1 class="app-title">DopeDecay</h1>
+        <p class="app-subtitle">Personal Dopamine Response & Motivation Decay Tracker</p>
+    </header>
+    
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <div class="tab active" data-tab="tracker">
+            <i class="fas fa-chart-line tab-icon"></i>
+            <span>Decay Tracker</span>
+        </div>
+        <div class="tab" data-tab="projects">
+            <i class="fas fa-code-branch tab-icon"></i>
+            <span>Projects</span>
+        </div>
+        <div class="tab" data-tab="actions">
+            <i class="fas fa-clock tab-icon"></i>
+            <span>Action Windows</span>
+        </div>
+        <div class="tab" data-tab="patterns">
+            <i class="fas fa-chart-bar tab-icon"></i>
+            <span>Patterns</span>
+        </div>
+    </div>
+    
+    <!-- Tab Contents -->
+    
+    <!-- Decay Tracker Tab -->
+    <div id="tracker" class="tab-content active">
+        <!-- Current Metrics -->
+        <div class="metrics-container">
+            <div class="metric-card">
+                <div class="metric-icon">⚡</div>
+                <div class="metric-value" id="current-motivation">68%</div>
+                <div class="metric-label">Current Motivation</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⏰</div>
+                <div class="metric-value" id="time-left">4.3h</div>
+                <div class="metric-label">Time in Window</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value" id="threshold-time">2.1h</div>
+                <div class="metric-label">To Threshold</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⚠️</div>
+                <div class="metric-value" id="abandonment-risk">Medium</div>
+                <div class="metric-label">Abandonment Risk</div>
+            </div>
+        </div>
+        
+        <!-- Chart -->
+        <div class="chart-container">
+            <div id="decay-chart"></div>
+        </div>
+        
+        <!-- Current Position -->
+        <div class="current-position">
+            <span id="current-zone-text">You're in the 🟡 VIABLE WINDOW</span>
+        </div>
+        
+        <!-- Action Zones -->
+        <div class="zones-container">
+            <div class="zone-card zone-peak">
+                <div class="zone-header">
+                    <div class="zone-title">🟢 PEAK WINDOW (0-6h)</div>
+                    <div class="zone-time">Optimal for building</div>
+                </div>
+                <div class="zone-desc">"This is amazing! I'm a genius!"</div>
+            </div>
+            <div class="zone-card zone-viable">
+                <div class="zone-header">
+                    <div class="zone-title">🟡 VIABLE WINDOW (6-24h)</div>
+                    <div class="zone-time">Marketing/outreach</div>
+                </div>
+                <div class="zone-desc">"This is still cool, I should do something"</div>
+            </div>
+            <div class="zone-card zone-danger">
+                <div class="zone-header">
+                    <div class="zone-title">🟠 DANGER ZONE (24-72h)</div>
+                    <div class="zone-time">External forcing required</div>
+                </div>
+                <div class="zone-desc">"Oh right, I made that thing"</div>
+            </div>
+            <div class="zone-card zone-dead">
+                <div class="zone-header">
+                    <div class="zone-title">🔴 DEAD ZONE (72h+)</div>
+                    <div class="zone-time">Archival only</div>
+                </div>
+                <div class="zone-desc">"What was I even thinking?"</div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls-container">
+            <div class="control-group">
+                <label class="control-label">Personal Parameters</label>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Dopamine Half-Life</span>
+                        <span class="slider-value" id="half-life-value">12 hours</span>
+                    </div>
+                    <input type="range" min="1" max="72" value="12" class="slider" id="half-life-slider">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Action Threshold</span>
+                        <span class="slider-value" id="threshold-value">50%</span>
+                    </div>
+                    <input type="range" min="1" max="100" value="50" class="slider" id="threshold-slider">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Behavioral Modifiers</label>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Sleep Resets Motivation?</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="sleep-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Coffee Boost (+15%)?</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="coffee-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Public Commitment?</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="commitment-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Project Type</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="type-coding" name="project-type" value="coding" checked>
+                        <label class="radio-label" for="type-coding">Coding</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="type-writing" name="project-type" value="writing">
+                        <label class="radio-label" for="type-writing">Writing</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="type-business" name="project-type" value="business">
+                        <label class="radio-label" for="type-business">Business</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker">🎉</div>
+                <div class="timeline-content">
+                    <div class="timeline-time">0h: Build Complete</div>
+                    <div class="timeline-desc">Project completed, dopamine at peak</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker">😴</div>
+                <div class="timeline-content">
+                    <div class="timeline-time">6h: First Sleep</div>
+                    <div class="timeline-desc">First sleep cycle resets motivation if enabled</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker">☀️</div>
+                <div class="timeline-content">
+                    <div class="timeline-time">12h: Morning After</div>
+                    <div class="timeline-desc">Critical decision point to act or abandon</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker">⚠️</div>
+                <div class="timeline-content">
+                    <div class="timeline-time">24h: Danger Zone</div>
+                    <div class="timeline-desc">External forcing required to continue</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker">☠️</div>
+                <div class="timeline-content">
+                    <div class="timeline-time">72h: Dead Zone</div>
+                    <div class="timeline-desc">Project memory fade, archival only</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Projects Tab -->
+    <div id="projects" class="tab-content">
+        <button class="btn btn-primary btn-full" id="new-project-btn">
+            <i class="fas fa-plus"></i> Start New Project
+        </button>
+        
+        <div id="projects-list">
+            <!-- Projects will be dynamically inserted here -->
+        </div>
+    </div>
+    
+    <!-- Action Windows Tab -->
+    <div id="actions" class="tab-content">
+        <div class="insight-card">
+            <div class="insight-title">
+                <i class="fas fa-lightbulb"></i> Smart Recommendation
+            </div>
+            <div class="insight-content">
+                <span id="smart-recommendation">You have 4.3 hours until dropping below action threshold. Optimal time to send emails: within next 3 hours.</span>
+            </div>
+        </div>
+        
+        <div class="action-grid">
+            <div class="action-card">
+                <div class="action-icon">📧</div>
+                <div class="action-title">Send Emails</div>
+                <div class="action-desc">Outreach & follow-ups</div>
+                <div class="action-threshold">Threshold: 40%</div>
+                <div class="action-threshold">Window: 6-12h</div>
+            </div>
+            <div class="action-card">
+                <div class="action-icon">📝</div>
+                <div class="action-title">Write Docs</div>
+                <div class="action-desc">Documentation & planning</div>
+                <div class="action-threshold">Threshold: 60%</div>
+                <div class="action-threshold">Window: 0-6h</div>
+            </div>
+            <div class="action-card">
+                <div class="action-icon">🔍</div>
+                <div class="action-title">Market Research</div>
+                <div class="action-desc">Competitor analysis</div>
+                <div class="action-threshold">Threshold: 30%</div>
+                <div class="action-threshold">Window: 12-24h</div>
+            </div>
+            <div class="action-card">
+                <div class="action-icon">🎨</div>
+                <div class="action-title">Polish UI</div>
+                <div class="action-desc">Design refinements</div>
+                <div class="action-threshold">Threshold: 70%</div>
+                <div class="action-threshold">Window: 0-4h</div>
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-title">
+                <i class="fas fa-exclamation-triangle"></i> Urgent Alert
+            </div>
+            <div class="insight-content">
+                Project abandonment risk: <strong>HIGH (82%)</strong>. Last chance to act before 'oh right, yeah' zone.
+            </div>
+        </div>
+        
+        <button class="btn btn-danger btn-full">
+            <i class="fas fa-bell"></i> Set Reminder Before Threshold
+        </button>
+        
+        <button class="btn btn-warning btn-full">
+            <i class="fas fa-history"></i> Log Action at Current Motivation
+        </button>
+    </div>
+    
+    <!-- Patterns Tab -->
+    <div id="patterns" class="tab-content">
+        <div class="insight-card">
+            <div class="insight-title">
+                <i class="fas fa-chart-line"></i> Your Decay Pattern
+            </div>
+            <div class="insight-content">
+                Based on your historical data, your personal dopamine half-life is <strong>14.2 hours</strong>. Coding projects decay 40% faster than writing projects for you.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-title">
+                <i class="fas fa-project-diagram"></i> Project Completion Analysis
+            </div>
+            <div class="insight-content">
+                You've started 12 projects in the last 90 days. 58% were abandoned, mostly in the 24-48 hour window. Your completion rate improves by 35% when using public commitment.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-title">
+                <i class="fas fa-cogs"></i> Intervention Suggestions
+            </div>
+            <div class="insight-content">
+                For business tasks, you need coffee + public commitment to maintain motivation. Schedule important follow-ups within 6 hours of project completion.
+            </div>
+        </div>
+        
+        <div class="chart-container" style="height: 250px;">
+            <div id="patterns-chart"></div>
+        </div>
+        
+        <button class="btn btn-secondary btn-full">
+            <i class="fas fa-download"></i> Export Pattern Data
+        </button>
+        
+        <button class="btn btn-primary btn-full">
+            <i class="fas fa-sync-alt"></i> Recalculate Personal Decay Rate
+        </button>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="btn btn-primary" id="log-action-btn">
+            <i class="fas fa-pen"></i> Log Action
+        </button>
+        <button class="btn btn-secondary" id="set-reminder-btn">
+            <i class="fas fa-bell"></i> Set Reminder
+        </button>
+        <button class="btn btn-warning" id="mark-abandoned-btn">
+            <i class="fas fa-flag"></i> Mark Abandoned
+        </button>
+    </div>
+    
+    <!-- Emergency Button -->
+    <div class="emergency-btn" id="emergency-btn">
+        <i class="fas fa-bolt"></i>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" data-tab="tracker">
+            <i class="fas fa-chart-line nav-icon"></i>
+            <span>Tracker</span>
+        </div>
+        <div class="nav-item" data-tab="projects">
+            <i class="fas fa-code-branch nav-icon"></i>
+            <span>Projects</span>
+        </div>
+        <div class="nav-item" data-tab="actions">
+            <i class="fas fa-clock nav-icon"></i>
+            <span>Actions</span>
+        </div>
+        <div class="nav-item" data-tab="patterns">
+            <i class="fas fa-chart-bar nav-icon"></i>
+            <span>Patterns</span>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- New Project Modal -->
+    <div class="modal" id="new-project-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Start New Project</h2>
+            <div class="form-group">
+                <label class="form-label" for="project-name">Project Name</label>
+                <input type="text" class="form-input" id="project-name" placeholder="e.g., My Awesome App">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Project Type</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="modal-type-coding" name="modal-project-type" value="coding" checked>
+                        <label class="radio-label" for="modal-type-coding">Coding</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="modal-type-writing" name="modal-project-type" value="writing">
+                        <label class="radio-label" for="modal-type-writing">Writing</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="modal-type-business" name="modal-project-type" value="business">
+                        <label class="radio-label" for="modal-type-business">Business</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="initial-excitement">Initial Excitement Level</label>
+                <input type="range" min="50" max="100" value="85" class="slider" id="initial-excitement">
+                <div class="slider-label">
+                    <span>Value</span>
+                    <span class="slider-value" id="excitement-value">85%</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-project-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-project-btn">Start Project</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Log Action Modal -->
+    <div class="modal" id="log-action-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Log Action</h2>
+            <div class="form-group">
+                <label class="form-label" for="action-type">Action Type</label>
+                <select class="form-input" id="action-type">
+                    <option value="email">Send Emails</option>
+                    <option value="docs">Write Documentation</option>
+                    <option value="research">Market Research</option>
+                    <option value="polish">Polish UI/UX</option>
+                    <option value="plan">Project Planning</option>
+                    <option value="outreach">Outreach/Collaboration</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="action-difficulty">Perceived Difficulty</label>
+                <input type="range" min="1" max="10" value="5" class="slider" id="action-difficulty">
+                <div class="slider-label">
+                    <span>Easy</span>
+                    <span>Hard</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Current Motivation: <span id="modal-motivation">68%</span></label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-action-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-action-btn">Log Action</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title" id="notification-title">Zone Change</div>
+            <div class="notification-desc" id="notification-desc">You've entered the DANGER ZONE</div>
+        </div>
+    </div>
+    
+    <script>
+        // App State
+        const appState = {
+            currentTab: 'tracker',
+            halfLife: 12,
+            actionThreshold: 50,
+            sleepResets: true,
+            coffeeBoost: false,
+            publicCommitment: false,
+            projectType: 'coding',
+            currentProject: null,
+            currentMotivation: 85,
+            hoursSinceCompletion: 8.5,
+            projects: [],
+            actions: []
+        };
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeSliders();
+            initializeButtons();
+            initializeCharts();
+            loadFromStorage();
+            updateUI();
+            simulateRealTimeUpdates();
+        });
+        
+        // Tab navigation
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab, .nav-item');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    appState.currentTab = tabId;
+                });
+            });
+        }
+        
+        // Slider controls
+        function initializeSliders() {
+            // Half-life slider
+            const halfLifeSlider = document.getElementById('half-life-slider');
+            const halfLifeValue = document.getElementById('half-life-value');
+            
+            halfLifeSlider.addEventListener('input', function() {
+                appState.halfLife = parseInt(this.value);
+                halfLifeValue.textContent = `${appState.halfLife} hours`;
+                updateUI();
+                saveToStorage();
+            });
+            
+            // Threshold slider
+            const thresholdSlider = document.getElementById('threshold-slider');
+            const thresholdValue = document.getElementById('threshold-value');
+            
+            thresholdSlider.addEventListener('input', function() {
+                appState.actionThreshold = parseInt(this.value);
+                thresholdValue.textContent = `${appState.actionThreshold}%`;
+                updateUI();
+                saveToStorage();
+            });
+            
+            // Excitement slider (modal)
+            const excitementSlider = document.getElementById('initial-excitement');
+            const excitementValue = document.getElementById('excitement-value');
+            
+            excitementSlider.addEventListener('input', function() {
+                excitementValue.textContent = `${this.value}%`;
+            });
+            
+            // Toggles
+            document.getElementById('sleep-toggle').addEventListener('change', function() {
+                appState.sleepResets = this.checked;
+                saveToStorage();
+                updateUI();
+            });
+            
+            document.getElementById('coffee-toggle').addEventListener('change', function() {
+                appState.coffeeBoost = this.checked;
+                saveToStorage();
+                updateUI();
+            });
+            
+            document.getElementById('commitment-toggle').addEventListener('change', function() {
+                appState.publicCommitment = this.checked;
+                saveToStorage();
+                updateUI();
+            });
+            
+            // Project type radios
+            document.querySelectorAll('input[name="project-type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        appState.projectType = this.value;
+                        saveToStorage();
+                        updateUI();
+                    }
+                });
+            });
+        }
+        
+        // Button handlers
+        function initializeButtons() {
+            // New project button
+            document.getElementById('new-project-btn').addEventListener('click', function() {
+                document.getElementById('new-project-modal').style.display = 'flex';
+            });
+            
+            // Cancel project button
+            document.getElementById('cancel-project-btn').addEventListener('click', function() {
+                document.getElementById('new-project-modal').style.display = 'none';
+            });
+            
+            // Save project button
+            document.getElementById('save-project-btn').addEventListener('click', function() {
+                const projectName = document.getElementById('project-name').value || 'Unnamed Project';
+                const projectType = document.querySelector('input[name="modal-project-type"]:checked').value;
+                const initialExcitement = parseInt(document.getElementById('initial-excitement').value);
+                
+                const newProject = {
+                    id: Date.now(),
+                    name: projectName,
+                    type: projectType,
+                    startTime: new Date().toISOString(),
+                    completionTime: new Date().toISOString(),
+                    initialExcitement: initialExcitement,
+                    abandoned: false,
+                    abandonTime: null,
+                    currentMotivation: initialExcitement
+                };
+                
+                appState.projects.push(newProject);
+                appState.currentProject = newProject.id;
+                appState.currentMotivation = initialExcitement;
+                appState.hoursSinceCompletion = 0;
+                
+                // Reset modal
+                document.getElementById('project-name').value = '';
+                document.getElementById('new-project-modal').style.display = 'none';
+                
+                updateUI();
+                saveToStorage();
+                showNotification('Project Started', `${projectName} is now being tracked!`);
+                
+                // Switch to tracker tab
+                document.querySelector('.tab[data-tab="tracker"]').click();
+            });
+            
+            // Log action button
+            document.getElementById('log-action-btn').addEventListener('click', function() {
+                document.getElementById('modal-motivation').textContent = `${Math.round(appState.currentMotivation)}%`;
+                document.getElementById('log-action-modal').style.display = 'flex';
+            });
+            
+            // Cancel action button
+            document.getElementById('cancel-action-btn').addEventListener('click', function() {
+                document.getElementById('log-action-modal').style.display = 'none';
+            });
+            
+            // Save action button
+            document.getElementById('save-action-btn').addEventListener('click', function() {
+                const actionType = document.getElementById('action-type').value;
+                const difficulty = parseInt(document.getElementById('action-difficulty').value);
+                
+                const newAction = {
+                    id: Date.now(),
+                    projectId: appState.currentProject,
+                    type: actionType,
+                    timestamp: new Date().toISOString(),
+                    motivationLevel: appState.currentMotivation,
+                    difficulty: difficulty
+                };
+                
+                appState.actions.push(newAction);
+                document.getElementById('log-action-modal').style.display = 'none';
+                
+                // Give a small motivation boost for taking action
+                appState.currentMotivation = Math.min(100, appState.currentMotivation + 5);
+                
+                updateUI();
+                saveToStorage();
+                showNotification('Action Logged', 'Good job taking action! +5% motivation boost');
+            });
+            
+            // Set reminder button
+            document.getElementById('set-reminder-btn').addEventListener('click', function() {
+                const timeToThreshold = calculateTimeToThreshold();
+                showNotification('Reminder Set', `You'll be notified in ${timeToThreshold.toFixed(1)} hours before dropping below threshold`);
+            });
+            
+            // Mark abandoned button
+            document.getElementById('mark-abandoned-btn').addEventListener('click', function() {
+                if (appState.currentProject && appState.projects.length > 0) {
+                    const project = appState.projects.find(p => p.id === appState.currentProject);
+                    if (project) {
+                        project.abandoned = true;
+                        project.abandonTime = new Date().toISOString();
+                        appState.currentProject = null;
+                        
+                        updateUI();
+                        saveToStorage();
+                        showNotification('Project Marked Abandoned', 'Added to pattern analysis. No shame, just data!');
+                    }
+                } else {
+                    showNotification('No Active Project', 'Start a project first to track abandonment');
+                }
+            });
+            
+            // Emergency button
+            document.getElementById('emergency-btn').addEventListener('click', function() {
+                // Boost motivation significantly
+                appState.currentMotivation = Math.min(100, appState.currentMotivation + 25);
+                
+                updateUI();
+                showNotification('Emergency Boost!', '+25% motivation! Use this energy NOW!', 'warning');
+            });
+        }
+        
+        // Charts
+        function initializeCharts() {
+            updateDecayChart();
+            updatePatternsChart();
+        }
+        
+        function updateDecayChart() {
+            // Generate data for decay curve
+            const hours = Array.from({length: 97}, (_, i) => i); // 0-96 hours
+            const decayData = hours.map(h => {
+                return calculateMotivation(100, h, appState.halfLife);
+            });
+            
+            // Calculate current motivation position
+            const currentMotivation = appState.currentMotivation;
+            const currentHour = appState.hoursSinceCompletion;
+            
+            // Define zone boundaries
+            const zoneBoundaries = [0, 6, 24, 72, 96];
+            
+            const data = [
+                // Decay curve
+                {
+                    x: hours,
+                    y: decayData,
+                    mode: 'lines',
+                    name: 'Dopamine Decay',
+                    line: {color: var('--primary-purple'), width: 4}
+                },
+                // Action threshold line
+                {
+                    x: [0, 96],
+                    y: [appState.actionThreshold, appState.actionThreshold],
+                    mode: 'lines',
+                    name: 'Action Threshold',
+                    line: {color: var('--danger'), width: 2, dash: 'dash'}
+                },
+                // Current position marker
+                {
+                    x: [currentHour],
+                    y: [currentMotivation],
+                    mode: 'markers',
+                    name: 'Current Position',
+                    marker: {size: 16, color: var('--amber')}
+                }
+            ];
+            
+            // Add zone shading
+            const zoneColors = ['rgba(16, 185, 129, 0.1)', 'rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.1)', 'rgba(107, 114, 128, 0.1)'];
+            
+            for (let i = 0; i < zoneBoundaries.length - 1; i++) {
+                data.push({
+                    x: [zoneBoundaries[i], zoneBoundaries[i+1], zoneBoundaries[i+1], zoneBoundaries[i]],
+                    y: [0, 0, 100, 100],
+                    fill: 'toself',
+                    fillcolor: zoneColors[i],
+                    mode: 'lines',
+                    line: {width: 0},
+                    name: `Zone ${i+1}`,
+                    hoverinfo: 'none',
+                    showlegend: false
+                });
+            }
+            
+            const layout = {
+                title: {text: 'Personal Dopamine Decay Curve', font: {size: 16}},
+                xaxis: {title: 'Hours Since Completion', range: [0, 96]},
+                yaxis: {title: 'Motivation Level (%)', range: [0, 105]},
+                showlegend: true,
+                legend: {orientation: 'h', y: -0.2},
+                margin: {t: 40, b: 80, l: 60, r: 30},
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white',
+                height: 280
+            };
+            
+            Plotly.newPlot('decay-chart', data, layout, {displayModeBar: false});
+        }
+        
+        function updatePatternsChart() {
+            // Sample data for patterns chart
+            const projectTypes = ['Coding', 'Writing', 'Business'];
+            const decayRates = [14.2, 23.8, 18.5];
+            
+            const data = [{
+                x: projectTypes,
+                y: decayRates,
+                type: 'bar',
+                marker: {
+                    color: [var('--primary-purple'), var('--primary-purple-light'), var('--amber')]
+                }
+            }];
+            
+            const layout = {
+                title: {text: 'Decay Rates by Project Type', font: {size: 14}},
+                yaxis: {title: 'Half-Life (hours)'},
+                margin: {t: 40, b: 40, l: 60, r: 30},
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white',
+                height: 210
+            };
+            
+            Plotly.newPlot('patterns-chart', data, layout, {displayModeBar: false});
+        }
+        
+        // Calculations
+        function calculateMotivation(initial, hours, halfLife) {
+            // Exponential decay formula: motivation = initial * e^(-ln(2) * hours / halfLife)
+            return initial * Math.exp(-Math.log(2) * hours / halfLife);
+        }
+        
+        function calculateCurrentMotivation() {
+            let motivation = calculateMotivation(
+                appState.currentMotivation,
+                appState.hoursSinceCompletion,
+                appState.halfLife
+            );
+            
+            // Apply modifiers
+            if (appState.coffeeBoost) motivation *= 1.15;
+            if (appState.publicCommitment) motivation *= 1.1;
+            
+            // Sleep reset logic
+            if (appState.sleepResets && appState.hoursSinceCompletion >= 6 && appState.hoursSinceCompletion < 18) {
+                motivation *= 1.2; // Simulate morning reset
+            }
+            
+            return Math.max(0, Math.min(100, motivation));
+        }
+        
+        function calculateTimeToThreshold() {
+            const current = calculateCurrentMotivation();
+            const threshold = appState.actionThreshold;
+            
+            if (current <= threshold) return 0;
+            
+            // Solve for t in: threshold = current * e^(-ln(2) * t / halfLife)
+            // t = -halfLife * ln(threshold/current) / ln(2)
+            return -appState.halfLife * Math.log(threshold/current) / Math.log(2);
+        }
+        
+        function calculateAbandonmentRisk() {
+            const current = calculateCurrentMotivation();
+            const threshold = appState.actionThreshold;
+            const diff = threshold - current;
+            
+            // Logistic function for probability
+            const k = 0.1; // Sensitivity parameter
+            const probability = 1 / (1 + Math.exp(-k * diff));
+            
+            return probability;
+        }
+        
+        function getCurrentZone() {
+            const hours = appState.hoursSinceCompletion;
+            
+            if (hours < 6) return {id: 'peak', name: 'PEAK WINDOW', color: '🟢'};
+            if (hours < 24) return {id: 'viable', name: 'VIABLE WINDOW', color: '🟡'};
+            if (hours < 72) return {id: 'danger', name: 'DANGER ZONE', color: '🟠'};
+            return {id: 'dead', name: 'DEAD ZONE', color: '🔴'};
+        }
+        
+        // UI Updates
+        function updateUI() {
+            // Update metrics
+            const currentMotivation = calculateCurrentMotivation();
+            const timeToThreshold = calculateTimeToThreshold();
+            const abandonmentRisk = calculateAbandonmentRisk();
+            const currentZone = getCurrentZone();
+            
+            // Update metric values
+            document.getElementById('current-motivation').textContent = `${Math.round(currentMotivation)}%`;
+            document.getElementById('time-left').textContent = `${Math.max(0, 6 - appState.hoursSinceCompletion).toFixed(1)}h`;
+            document.getElementById('threshold-time').textContent = `${timeToThreshold.toFixed(1)}h`;
+            
+            // Update abandonment risk
+            let riskText = 'Low';
+            let riskColor = 'var(--success)';
+            if (abandonmentRisk > 0.7) {
+                riskText = 'High';
+                riskColor = 'var(--danger)';
+            } else if (abandonmentRisk > 0.3) {
+                riskText = 'Medium';
+                riskColor = 'var(--warning)';
+            }
+            document.getElementById('abandonment-risk').textContent = riskText;
+            document.getElementById('abandonment-risk').style.color = riskColor;
+            
+            // Update zone text
+            document.getElementById('current-zone-text').textContent = `You're in the ${currentZone.color} ${currentZone.name}`;
+            
+            // Update smart recommendation
+            const smartRec = document.getElementById('smart-recommendation');
+            if (timeToThreshold > 0) {
+                smartRec.textContent = `You have ${timeToThreshold.toFixed(1)} hours until dropping below action threshold. Optimal time to send emails: within next 3 hours.`;
+            } else {
+                smartRec.textContent = `You're below action threshold. Consider an emergency boost or schedule task for tomorrow morning.`;
+            }
+            
+            // Update charts
+            updateDecayChart();
+            
+            // Update projects list
+            updateProjectsList();
+            
+            // Update emergency button visibility
+            const emergencyBtn = document.getElementById('emergency-btn');
+            if (currentZone.id === 'danger' || currentZone.id === 'dead') {
+                emergencyBtn.style.display = 'flex';
+            } else {
+                emergencyBtn.style.display = 'none';
+            }
+            
+            // Update current motivation in app state
+            appState.currentMotivation = currentMotivation;
+        }
+        
+        function updateProjectsList() {
+            const projectsList = document.getElementById('projects-list');
+            projectsList.innerHTML = '';
+            
+            if (appState.projects.length === 0) {
+                projectsList.innerHTML = `
+                    <div class="project-card" style="text-align: center; padding: 2rem;">
+                        <p style="margin-bottom: 1rem; color: var(--gray-700);">No projects yet. Start your first project to track dopamine decay!</p>
+                        <button class="btn btn-primary" id="start-first-project">
+                            <i class="fas fa-plus"></i> Start First Project
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('start-first-project').addEventListener('click', function() {
+                    document.getElementById('new-project-modal').style.display = 'flex';
+                });
+                
+                return;
+            }
+            
+            // Sort projects by most recent
+            const sortedProjects = [...appState.projects].sort((a, b) => 
+                new Date(b.completionTime) - new Date(a.completionTime)
+            );
+            
+            sortedProjects.forEach(project => {
+                const completionDate = new Date(project.completionTime);
+                const hoursSince = (Date.now() - completionDate.getTime()) / (1000 * 60 * 60);
+                const motivation = calculateMotivation(project.initialExcitement, hoursSince, appState.halfLife);
+                const zone = hoursSince < 6 ? 'peak' : hoursSince < 24 ? 'viable' : hoursSince < 72 ? 'danger' : 'dead';
+                
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <div class="project-header">
+                        <div class="project-name">${project.name}</div>
+                        <div class="project-type">${project.type.charAt(0).toUpperCase() + project.type.slice(1)}</div>
+                    </div>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <i class="fas fa-bolt" style="color: var(--primary-purple);"></i>
+                            <span>${Math.round(motivation)}%</span>
+                        </div>
+                        <div class="project-stat">
+                            <i class="fas fa-clock" style="color: var(--gray-700);"></i>
+                            <span>${hoursSince.toFixed(1)}h ago</span>
+                        </div>
+                        <div class="project-stat">
+                            <i class="fas fa-chart-line" style="color: ${zone === 'peak' ? 'var(--success)' : zone === 'viable' ? 'var(--warning)' : zone === 'danger' ? 'var(--danger)' : 'var(--gray-700)'}"></i>
+                            <span>${zone.charAt(0).toUpperCase() + zone.slice(1)}</span>
+                        </div>
+                    </div>
+                    <div>Started: ${completionDate.toLocaleDateString()}</div>
+                    <div class="project-actions">
+                        ${project.abandoned ? 
+                            `<button class="btn btn-secondary btn-small" style="opacity: 0.7;" disabled>Abandoned</button>` : 
+                            `<button class="btn btn-primary btn-small project-activate-btn" data-id="${project.id}">Activate</button>`
+                        }
+                        <button class="btn btn-warning btn-small project-log-btn" data-id="${project.id}">Log Action</button>
+                    </div>
+                `;
+                
+                projectsList.appendChild(projectCard);
+            });
+            
+            // Add event listeners to project buttons
+            document.querySelectorAll('.project-activate-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = parseInt(this.getAttribute('data-id'));
+                    const project = appState.projects.find(p => p.id === projectId);
+                    
+                    if (project) {
+                        appState.currentProject = projectId;
+                        const completionDate = new Date(project.completionTime);
+                        appState.hoursSinceCompletion = (Date.now() - completionDate.getTime()) / (1000 * 60 * 60);
+                        appState.currentMotivation = project.initialExcitement;
+                        
+                        updateUI();
+                        saveToStorage();
+                        
+                        // Switch to tracker tab
+                        document.querySelector('.tab[data-tab="tracker"]').click();
+                        
+                        showNotification('Project Activated', `Now tracking ${project.name}`);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.project-log-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = parseInt(this.getAttribute('data-id'));
+                    const project = appState.projects.find(p => p.id === projectId);
+                    
+                    if (project) {
+                        appState.currentProject = projectId;
+                        const completionDate = new Date(project.completionTime);
+                        appState.hoursSinceCompletion = (Date.now() - completionDate.getTime()) / (1000 * 60 * 60);
+                        
+                        document.getElementById('log-action-btn').click();
+                    }
+                });
+            });
+        }
+        
+        // Storage
+        function saveToStorage() {
+            try {
+                const data = {
+                    halfLife: appState.halfLife,
+                    actionThreshold: appState.actionThreshold,
+                    sleepResets: appState.sleepResets,
+                    coffeeBoost: appState.coffeeBoost,
+                    publicCommitment: appState.publicCommitment,
+                    projectType: appState.projectType,
+                    projects: appState.projects,
+                    actions: appState.actions,
+                    currentProject: appState.currentProject
+                };
+                localStorage.setItem('dopedecay-state', JSON.stringify(data));
+            } catch (e) {
+                console.error('Error saving to storage:', e);
+            }
+        }
+        
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem('dopedecay-state');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    
+                    appState.halfLife = data.halfLife || 12;
+                    appState.actionThreshold = data.actionThreshold || 50;
+                    appState.sleepResets = data.sleepResets !== undefined ? data.sleepResets : true;
+                    appState.coffeeBoost = data.coffeeBoost || false;
+                    appState.publicCommitment = data.publicCommitment || false;
+                    appState.projectType = data.projectType || 'coding';
+                    appState.projects = data.projects || [];
+                    appState.actions = data.actions || [];
+                    appState.currentProject = data.currentProject || null;
+                    
+                    // Update UI elements to match loaded state
+                    document.getElementById('half-life-slider').value = appState.halfLife;
+                    document.getElementById('half-life-value').textContent = `${appState.halfLife} hours`;
+                    document.getElementById('threshold-slider').value = appState.actionThreshold;
+                    document.getElementById('threshold-value').textContent = `${appState.actionThreshold}%`;
+                    document.getElementById('sleep-toggle').checked = appState.sleepResets;
+                    document.getElementById('coffee-toggle').checked = appState.coffeeBoost;
+                    document.getElementById('commitment-toggle').checked = appState.publicCommitment;
+                    
+                    document.querySelectorAll('input[name="project-type"]').forEach(radio => {
+                        radio.checked = (radio.value === appState.projectType);
+                    });
+                }
+            } catch (e) {
+                console.error('Error loading from storage:', e);
+            }
+        }
+        
+        // Notifications
+        function showNotification(title, message, type = 'info') {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-desc').textContent = message;
+            
+            // Set icon based on type
+            const icon = notification.querySelector('.notification-icon i');
+            if (type === 'warning') {
+                icon.className = 'fas fa-exclamation-triangle';
+                icon.style.color = 'var(--warning)';
+            } else if (type === 'danger') {
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.color = 'var(--danger)';
+            } else {
+                icon.className = 'fas fa-bell';
+                icon.style.color = 'var(--primary-purple)';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            // Update hours since completion periodically
+            setInterval(() => {
+                if (appState.currentProject) {
+                    const project = appState.projects.find(p => p.id === appState.currentProject);
+                    if (project) {
+                        const completionDate = new Date(project.completionTime);
+                        appState.hoursSinceCompletion = (Date.now() - completionDate.getTime()) / (1000 * 60 * 60);
+                        
+                        // Check for zone changes
+                        const oldZone = getCurrentZone();
+                        updateUI();
+                        const newZone = getCurrentZone();
+                        
+                        if (oldZone.id !== newZone.id) {
+                            showNotification('Zone Change', `You've entered the ${newZone.name}`, 
+                                           newZone.id === 'danger' || newZone.id === 'dead' ? 'warning' : 'info');
+                        }
+                    }
+                }
+            }, 60000); // Update every minute
+            
+            // Also update immediately
+            updateUI();
+        }
+        
+        // Helper function to get CSS variable
+        function var(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+    </script>
+</body>
+</html>
