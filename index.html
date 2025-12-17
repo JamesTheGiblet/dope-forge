@@ -895,7 +895,7 @@
                         <span>Dopamine Half-Life</span>
                         <span class="slider-value" id="half-life-value">12 hours</span>
                     </div>
-                    <input type="range" min="1" max="72" value="12" class="slider" id="half-life-slider">
+                    <input type="range" min="1" max="72" value="12" class="slider" id="half-life-slider" title="Dopamine Half-Life">
                 </div>
                 
                 <div class="slider-container">
@@ -903,7 +903,7 @@
                         <span>Action Threshold</span>
                         <span class="slider-value" id="threshold-value">50%</span>
                     </div>
-                    <input type="range" min="1" max="100" value="50" class="slider" id="threshold-slider">
+                    <input type="range" min="1" max="100" value="50" class="slider" id="threshold-slider" title="Action Threshold">
                 </div>
             </div>
             
@@ -911,9 +911,9 @@
                 <label class="control-label">Behavioral Modifiers</label>
                 
                 <div class="toggle-container">
-                    <span class="toggle-label">Sleep Resets Motivation?</span>
+                    <label class="toggle-label" for="sleep-toggle">Sleep Resets Motivation?</label>
                     <label class="toggle">
-                        <input type="checkbox" id="sleep-toggle" checked>
+                        <input type="checkbox" id="sleep-toggle" checked title="Sleep Resets Motivation">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -921,7 +921,7 @@
                 <div class="toggle-container">
                     <span class="toggle-label">Coffee Boost (+15%)?</span>
                     <label class="toggle">
-                        <input type="checkbox" id="coffee-toggle">
+                        <input type="checkbox" id="coffee-toggle" title="Coffee Boost (+15%)">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -929,7 +929,7 @@
                 <div class="toggle-container">
                     <span class="toggle-label">Public Commitment?</span>
                     <label class="toggle">
-                        <input type="checkbox" id="commitment-toggle">
+                        <input type="checkbox" id="commitment-toggle" aria-label="Public Commitment">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
