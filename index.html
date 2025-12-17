@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DopeDecay - Dopamine Decay Tracker</title>
     <link rel="icon" href="https://jamesthegiblet.github.io/favicon.ico">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="fontawesome/css/all.min.css">
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
     <style>
         :root {
@@ -29,6 +29,23 @@
             --zone-viable: rgba(245, 158, 11, 0.1);
             --zone-danger: rgba(239, 68, 68, 0.1);
             --zone-dead: rgba(107, 114, 128, 0.1);
+            
+            --bg-card: #ffffff;
+            --bg-body: var(--gray-50);
+        }
+
+        [data-theme="dark"] {
+            --gray-50: #111827;
+            --gray-100: #1F2937;
+            --gray-200: #374151;
+            --gray-300: #4B5563;
+            --gray-700: #9CA3AF;
+            --gray-900: #F9FAFB;
+            
+            --bg-body: #0f172a;
+            --bg-card: #1F2937;
+            
+            --zone-dead: rgba(156, 163, 175, 0.1);
         }
         
         * {
@@ -39,7 +56,7 @@
         }
         
         body {
-            background-color: var(--gray-50);
+            background-color: var(--bg-body);
             color: var(--gray-900);
             max-width: 100%;
             overflow-x: hidden;
@@ -72,7 +89,7 @@
         
         .tabs-container {
             display: flex;
-            background-color: white;
+            background-color: var(--bg-card);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 100px;
@@ -125,7 +142,7 @@
         }
         
         .metric-card {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -150,7 +167,7 @@
         }
         
         .chart-container {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -217,7 +234,7 @@
         }
         
         .controls-container {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -273,7 +290,7 @@
             border-radius: 50%;
             background: var(--primary-purple);
             cursor: pointer;
-            border: 3px solid white;
+            border: 3px solid var(--bg-card);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         
@@ -322,7 +339,7 @@
             width: 20px;
             left: 4px;
             bottom: 4px;
-            background-color: white;
+            background-color: var(--bg-card);
             transition: .3s;
             border-radius: 50%;
         }
@@ -368,7 +385,7 @@
         }
         
         .project-card {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -479,7 +496,7 @@
         }
         
         .action-card {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -520,7 +537,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: white;
+            background-color: var(--bg-card);
             display: flex;
             padding: 0.75rem 0;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
@@ -574,7 +591,7 @@
         }
         
         .insight-card {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 12px;
             padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -625,7 +642,7 @@
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            background-color: white;
+            background-color: var(--bg-card);
             border: 3px solid var(--primary-purple);
             display: flex;
             align-items: center;
@@ -635,7 +652,7 @@
         }
         
         .timeline-content {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 8px;
             padding: 0.75rem;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -683,7 +700,7 @@
         }
         
         .modal-content {
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 16px;
             padding: 1.5rem;
             width: 100%;
@@ -732,7 +749,7 @@
             position: fixed;
             top: 120px;
             right: 1rem;
-            background-color: white;
+            background-color: var(--bg-card);
             border-radius: 10px;
             padding: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -786,11 +803,63 @@
                 min-width: calc(50% - 0.5rem);
             }
         }
+        
+        .pro-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            margin-left: 5px;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        .locked-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .locked-content {
+            filter: blur(5px);
+            pointer-events: none;
+            -webkit-user-select: none;
+            user-select: none;
+            opacity: 0.7;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .lock-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            border: 1px solid var(--gray-200);
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="app-header">
+        <div style="position: absolute; top: 1.5rem; right: 1rem;">
+            <button id="theme-toggle" class="btn btn-small" title="Toggle dark/light theme" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-moon"></i></button>
+        </div>
         <h1 class="app-title">DopeDecay</h1>
         <p class="app-subtitle">Personal Dopamine Response & Motivation Decay Tracker</p>
     </header>
@@ -811,7 +880,7 @@
         </div>
         <div class="tab" data-tab="patterns">
             <i class="fas fa-chart-bar tab-icon"></i>
-            <span>Patterns</span>
+            <span>Patterns <span class="pro-badge">PRO</span></span>
         </div>
     </div>
     
@@ -952,6 +1021,31 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="control-group">
+                <label class="control-label">Pro Features <span class="pro-badge">LOCKED</span></label>
+                
+                <div class="toggle-container" style="opacity: 0.6;">
+                    <span class="toggle-label"><i class="fas fa-brain"></i> AI Coaching</span>
+                    <label class="toggle">
+                        <input type="checkbox" disabled title="AI Coaching (Pro feature)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container" style="opacity: 0.6;">
+                    <span class="toggle-label"><i class="fas fa-calendar-alt"></i> Calendar Sync</span>
+                    <label class="toggle">
+                        <input type="checkbox" disabled title="Calendar Sync (Pro feature)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container" style="opacity: 0.6;">
+                    <span class="toggle-label"><i class="fas fa-file-export"></i> Export Data (JSON/CSV)</span>
+                    <button class="btn btn-small" disabled style="background: var(--gray-200); color: var(--gray-700); cursor: not-allowed;">
+                        <i class="fas fa-lock"></i> PRO
+                    </button>
+                </div>
+            </div>
         </div>
         
         <!-- Timeline -->
@@ -1067,44 +1161,51 @@
     
     <!-- Patterns Tab -->
     <div id="patterns" class="tab-content">
-        <div class="insight-card">
-            <div class="insight-title">
-                <i class="fas fa-chart-line"></i> Your Decay Pattern
+        <div class="locked-container">
+            <div class="lock-overlay">
+                <div class="lock-card">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 800;">Pro Features Locked</h3>
+                    <p style="color: var(--gray-700); margin-bottom: 1.5rem;">Unlock advanced pattern analysis, AI insights, and historical data export.</p>
+                    
+                    <div style="background: var(--gray-100); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Contact for Access:</div>
+                        <div style="margin-bottom: 0.25rem;"><i class="fas fa-envelope"></i> gibletscreations@gmail.com</div>
+                        <div><i class="fas fa-phone"></i> 0793005731</div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-full">Request Access</button>
+                </div>
             </div>
-            <div class="insight-content">
-                Based on your historical data, your personal dopamine half-life is <strong>14.2 hours</strong>. Coding projects decay 40% faster than writing projects for you.
+            
+            <div class="locked-content">
+                <div class="insight-card">
+                    <div class="insight-title">
+                        <i class="fas fa-chart-line"></i> Your Decay Pattern
+                    </div>
+                    <div class="insight-content">
+                        Based on your historical data, your personal dopamine half-life is <strong>14.2 hours</strong>. Coding projects decay 40% faster than writing projects for you.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title">
+                        <i class="fas fa-project-diagram"></i> Project Completion Analysis
+                    </div>
+                    <div class="insight-content">
+                        You've started 12 projects in the last 90 days. 58% were abandoned, mostly in the 24-48 hour window. Your completion rate improves by 35% when using public commitment.
+                    </div>
+                </div>
+                
+                <div class="chart-container" style="height: 250px;">
+                    <div id="patterns-chart"></div>
+                </div>
+                
+                <button class="btn btn-secondary btn-full">
+                    <i class="fas fa-download"></i> Export Pattern Data
+                </button>
             </div>
         </div>
-        
-        <div class="insight-card">
-            <div class="insight-title">
-                <i class="fas fa-project-diagram"></i> Project Completion Analysis
-            </div>
-            <div class="insight-content">
-                You've started 12 projects in the last 90 days. 58% were abandoned, mostly in the 24-48 hour window. Your completion rate improves by 35% when using public commitment.
-            </div>
-        </div>
-        
-        <div class="insight-card">
-            <div class="insight-title">
-                <i class="fas fa-cogs"></i> Intervention Suggestions
-            </div>
-            <div class="insight-content">
-                For business tasks, you need coffee + public commitment to maintain motivation. Schedule important follow-ups within 6 hours of project completion.
-            </div>
-        </div>
-        
-        <div class="chart-container" style="height: 250px;">
-            <div id="patterns-chart"></div>
-        </div>
-        
-        <button class="btn btn-secondary btn-full">
-            <i class="fas fa-download"></i> Export Pattern Data
-        </button>
-        
-        <button class="btn btn-primary btn-full">
-            <i class="fas fa-sync-alt"></i> Recalculate Personal Decay Rate
-        </button>
     </div>
     
     <!-- Quick Actions -->
@@ -1255,6 +1356,7 @@
             initializeButtons();
             initializeCharts();
             loadFromStorage();
+            initializeTheme();
             updateUI();
             simulateRealTimeUpdates();
         });
@@ -1344,6 +1446,31 @@
             });
         }
         
+        // Theme handling
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('dopedecay-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.querySelector('#theme-toggle i').className = 'fas fa-sun';
+            }
+            
+            document.getElementById('theme-toggle').addEventListener('click', function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    document.documentElement.removeAttribute('data-theme');
+                    this.querySelector('i').className = 'fas fa-moon';
+                    localStorage.setItem('dopedecay-theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    this.querySelector('i').className = 'fas fa-sun';
+                    localStorage.setItem('dopedecay-theme', 'dark');
+                }
+                // Update charts to match new theme
+                updateDecayChart();
+                updatePatternsChart();
+            });
+        }
+
         // Button handlers
         function initializeButtons() {
             // New project button
@@ -1468,6 +1595,11 @@
         }
         
         function updateDecayChart() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const bgColor = isDark ? '#1F2937' : 'white';
+            const textColor = isDark ? '#F9FAFB' : '#111827';
+            const gridColor = isDark ? '#374151' : '#E5E7EB';
+            
             // Generate data for decay curve
             const hours = Array.from({length: 97}, (_, i) => i); // 0-96 hours
             const decayData = hours.map(h => {
@@ -1526,21 +1658,26 @@
             }
             
             const layout = {
-                title: {text: 'Personal Dopamine Decay Curve', font: {size: 16}},
-                xaxis: {title: 'Hours Since Completion', range: [0, 96]},
-                yaxis: {title: 'Motivation Level (%)', range: [0, 105]},
+                title: {text: 'Personal Dopamine Decay Curve', font: {size: 16, color: textColor}},
+                xaxis: {title: 'Hours Since Completion', range: [0, 96], color: textColor, gridcolor: gridColor},
+                yaxis: {title: 'Motivation Level (%)', range: [0, 105], color: textColor, gridcolor: gridColor},
                 showlegend: true,
-                legend: {orientation: 'h', y: -0.2},
+                legend: {orientation: 'h', y: -0.2, font: {color: textColor}},
                 margin: {t: 40, b: 80, l: 60, r: 30},
-                plot_bgcolor: 'white',
-                paper_bgcolor: 'white',
+                plot_bgcolor: bgColor,
+                paper_bgcolor: bgColor,
                 height: 280
             };
             
-            Plotly.newPlot('decay-chart', data, layout, {displayModeBar: false});
+            Plotly.newPlot('decay-chart', data, layout, {displayModeBar: false, responsive: true});
         }
         
         function updatePatternsChart() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const bgColor = isDark ? '#1F2937' : 'white';
+            const textColor = isDark ? '#F9FAFB' : '#111827';
+            const gridColor = isDark ? '#374151' : '#E5E7EB';
+            
             // Sample data for patterns chart
             const projectTypes = ['Coding', 'Writing', 'Business'];
             const decayRates = [14.2, 23.8, 18.5];
@@ -1555,15 +1692,16 @@
             }];
             
             const layout = {
-                title: {text: 'Decay Rates by Project Type', font: {size: 14}},
-                yaxis: {title: 'Half-Life (hours)'},
+                title: {text: 'Decay Rates by Project Type', font: {size: 14, color: textColor}},
+                yaxis: {title: 'Half-Life (hours)', color: textColor, gridcolor: gridColor},
+                xaxis: {color: textColor},
                 margin: {t: 40, b: 40, l: 60, r: 30},
-                plot_bgcolor: 'white',
-                paper_bgcolor: 'white',
+                plot_bgcolor: bgColor,
+                paper_bgcolor: bgColor,
                 height: 210
             };
             
-            Plotly.newPlot('patterns-chart', data, layout, {displayModeBar: false});
+            Plotly.newPlot('patterns-chart', data, layout, {displayModeBar: false, responsive: true});
         }
         
         // Calculations
@@ -1795,7 +1933,8 @@
                     projectType: appState.projectType,
                     projects: appState.projects,
                     actions: appState.actions,
-                    currentProject: appState.currentProject
+                    currentProject: appState.currentProject,
+                    currentMotivation: appState.currentMotivation
                 };
                 localStorage.setItem('dopedecay-state', JSON.stringify(data));
             } catch (e) {
@@ -1818,6 +1957,20 @@
                     appState.projects = data.projects || [];
                     appState.actions = data.actions || [];
                     appState.currentProject = data.currentProject || null;
+                    
+                    // Restore current motivation
+                    if (data.currentMotivation !== undefined) {
+                        appState.currentMotivation = data.currentMotivation;
+                    }
+                    
+                    // Recalculate time since completion for the active project
+                    if (appState.currentProject) {
+                        const project = appState.projects.find(p => p.id === appState.currentProject);
+                        if (project) {
+                            const completionDate = new Date(project.completionTime);
+                            appState.hoursSinceCompletion = (Date.now() - completionDate.getTime()) / (1000 * 60 * 60);
+                        }
+                    }
                     
                     // Update UI elements to match loaded state
                     document.getElementById('half-life-slider').value = appState.halfLife;
