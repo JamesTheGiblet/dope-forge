@@ -1487,7 +1487,7 @@
                     y: decayData,
                     mode: 'lines',
                     name: 'Dopamine Decay',
-                    line: {color: var('--primary-purple'), width: 4}
+                    line: {color: getCssVar('--primary-purple'), width: 4}
                 },
                 // Action threshold line
                 {
@@ -1495,7 +1495,7 @@
                     y: [appState.actionThreshold, appState.actionThreshold],
                     mode: 'lines',
                     name: 'Action Threshold',
-                    line: {color: var('--danger'), width: 2, dash: 'dash'}
+                    line: {color: getCssVar('--danger'), width: 2, dash: 'dash'}
                 },
                 // Current position marker
                 {
@@ -1503,7 +1503,7 @@
                     y: [currentMotivation],
                     mode: 'markers',
                     name: 'Current Position',
-                    marker: {size: 16, color: var('--amber')}
+                    marker: {size: 16, color: getCssVar('--amber')}
                 }
             ];
             
@@ -1549,7 +1549,7 @@
                 y: decayRates,
                 type: 'bar',
                 marker: {
-                    color: [var('--primary-purple'), var('--primary-purple-light'), var('--amber')]
+                    color: [getCssVar('--primary-purple'), getCssVar('--primary-purple-light'), getCssVar('--amber')]
                 }
             }];
             
@@ -1890,7 +1890,7 @@
         }
         
         // Helper function to get CSS variable
-        function var(name) {
+        function getCssVar(name) {
             return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         }
     </script>
